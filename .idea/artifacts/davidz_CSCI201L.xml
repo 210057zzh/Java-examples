@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="davidz_CSCI201L">
+    <output-path>$PROJECT_DIR$/out/artifacts/davidz_CSCI201L</output-path>
+    <root id="root">
+      <element id="archive" name="davidz_CSCI201L.jar">
+        <element id="module-output" name="davidz_CSCI201L" />
+      </element>
+    </root>
+  </artifact>
+</component>
