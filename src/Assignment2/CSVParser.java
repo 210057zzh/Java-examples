@@ -3,13 +3,12 @@ package Assignment2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 public class CSVParser {
     public Scanner scan;
     public String file;
-    public ArrayList<Trade> trades = new ArrayList<>();
+    public HashMap<String, List<Trade>> hashMap = new HashMap<>();
     public ArrayList<Company> companies;
 
     public CSVParser(Scanner scan, ArrayList<Company> companies) {
@@ -17,7 +16,10 @@ public class CSVParser {
         this.companies = companies;
     }
 
-    public ArrayList<Trade> ReadCSV() {
+    public HashMap<String, List<Trade>> ReadCSV() {
+        for (Company company : companies) {
+            hashMap.put(company.ticker, Collections.synchronizedList(new LinkedList<>()));
+        }
         boolean valid = false;
         file = null;
         while (!valid) {
@@ -29,10 +31,9 @@ public class CSVParser {
                 //Read File Line By Line
                 while ((strLine = csv.readLine()) != null) {
                     // Print the content on the console
-                    trades.add((Trade) verifyTrade(strLine));
-                    if (trades.get(trades.size() - 1).numStocks == 0) {
-                        trades.remove(trades.size() - 1);
-                        System.out.println("Warning: one of the trade has number stocks 0, has been removed");
+                    Trade temp = (Trade) verifyTrade(strLine);
+                    if (temp.numStocks != 0) {
+                        hashMap.get(temp.ticker).add(temp);
                     }
                 }
                 valid = true;
@@ -47,7 +48,7 @@ public class CSVParser {
             }
         }
         System.out.println("CSV Read, ready to serve");
-        return trades;
+        return hashMap;
     }
 
     private Object verifyTrade(String line) throws NoSuchFieldError, NumberFormatException {

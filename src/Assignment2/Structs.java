@@ -11,12 +11,12 @@ class Company {
 
 class Trade {
     int time;
-    String exchangeCode;
+    String ticker;
     int numStocks;
 
     Trade(int time, String exchangeCode, int numStocks) {
         this.time = time;
-        this.exchangeCode = exchangeCode;
+        this.ticker = exchangeCode;
         this.numStocks = numStocks;
     }
 }
