@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CSVParser {
     public Scanner scan;
     public String file;
-    public HashMap<String, List<Trade>> hashMap = new HashMap<>();
+    public HashMap<String, ConcurrentLinkedQueue<Trade>> hashMap = new HashMap<>();
     public ArrayList<Company> companies;
 
     public CSVParser(Scanner scan, ArrayList<Company> companies) {
@@ -16,9 +17,9 @@ public class CSVParser {
         this.companies = companies;
     }
 
-    public HashMap<String, List<Trade>> ReadCSV() {
+    public HashMap<String, ConcurrentLinkedQueue<Trade>> ReadCSV() {
         for (Company company : companies) {
-            hashMap.put(company.ticker, Collections.synchronizedList(new LinkedList<>()));
+            hashMap.put(company.ticker, new ConcurrentLinkedQueue<Trade>());
         }
         boolean valid = false;
         file = null;
