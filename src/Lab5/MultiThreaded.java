@@ -3,11 +3,8 @@ package Lab5;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class MultiThreaded extends Thread {
     private static ArrayList<Integer> arrayList;
@@ -16,7 +13,6 @@ public class MultiThreaded extends Thread {
     private Integer start;
     private Integer end;
     private static Instant first;
-    public static Boolean running = false;
 
     @Override
     public void run() {
@@ -28,7 +24,6 @@ public class MultiThreaded extends Thread {
                 return;
             }
         }
-        result = -1;
     }
 
     public MultiThreaded(Integer start, Integer end) {
@@ -40,8 +35,7 @@ public class MultiThreaded extends Thread {
         result = -1;
         MultiThreaded.arrayList = arrayList;
         MultiThreaded.target = target;
-        int i1 = 10;
-
+        int i1 = 100;
         Integer fourth = arrayList.size() / i1;
         ExecutorService executorService = Executors.newFixedThreadPool(i1);
         MultiThreaded.first = Instant.now();
@@ -54,6 +48,7 @@ public class MultiThreaded extends Thread {
             if (MultiThreaded.result != -1) {
                 break;
             }
+            Thread.yield();
         }
         if (MultiThreaded.result == -1) {
             System.out.println("Spent " + Duration.between(first, Instant.now()).toMillis() + "  milliseconds");

@@ -9,7 +9,7 @@ import java.util.concurrent.RecursiveTask;
 
 public class Parallel {
     public static void driver(ArrayList<Integer> arrayList, Integer target) {
-        int i1 = 10;
+        int i1 = 100;
         Find[] result = new Find[i1];
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         Integer fourth = arrayList.size() / i1;
