@@ -1,4 +1,4 @@
-package lab1;
+package Lab1;
 
 class C0 {
     public void meth3() {

@@ -23,6 +23,9 @@ public class MultiThreaded extends Thread {
                 result = i;
                 return;
             }
+            if (result != -1) {
+                return;
+            }
         }
     }
 

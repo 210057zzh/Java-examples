@@ -38,6 +38,7 @@ public class CSVParser {
                     }
                 }
                 valid = true;
+                csv.close();
             } catch (java.io.FileNotFoundException e) {
                 System.out.println(file + " Not Found, make sure the file is put under src/Assignment2/");
             } catch (NoSuchFieldError e) {

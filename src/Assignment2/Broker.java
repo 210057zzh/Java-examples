@@ -10,6 +10,7 @@ public class Broker extends Thread {
     private static HashMap<String, ConcurrentLinkedQueue<Trade>> lists;
     private static Instant start;
     private static final Object allAdded = new Object();
+    private static final Object outputting = new Object();
 
     public Broker(String ticker) {
         this.ticker = ticker;
@@ -30,28 +31,36 @@ public class Broker extends Thread {
                 addorsell = "sale";
                 target.numStocks *= -1;
             }
-            while (duration.getSeconds() < target.time) {
-                Thread.yield();
-                duration = Duration.between(start, Instant.now());
+            if (duration.getSeconds() < target.time) {
+                try {
+                    Thread.sleep(target.time * 1000L - duration.toMillis());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            System.out.printf("%02d:%02d:%02d:%02d Starting " + addorsell +
-                            " of " + target.numStocks + " of " + target.ticker + "\n",
-                    duration.toHours(),
-                    duration.toMinutesPart(),
-                    duration.toSecondsPart(),
-                    duration.toMillisPart());
+            synchronized (outputting) {
+                duration = Duration.between(start, Instant.now());
+                System.out.printf("%02d:%02d:%02d:%03d Starting " + addorsell +
+                                " of " + target.numStocks + " of " + target.ticker + "\n",
+                        duration.toHours(),
+                        duration.toMinutesPart(),
+                        duration.toSecondsPart(),
+                        duration.toMillisPart());
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            duration = Duration.between(start, Instant.now());
-            System.out.printf("%02d:%02d:%02d:%02d Finished " + addorsell +
-                            " of " + target.numStocks + " of " + target.ticker + "\n",
-                    duration.toHours(),
-                    duration.toMinutesPart(),
-                    duration.toSecondsPart(),
-                    duration.toMillisPart());
+            synchronized (outputting) {
+                duration = Duration.between(start, Instant.now());
+                System.out.printf("%02d:%02d:%02d:%03d Finished " + addorsell +
+                                " of " + target.numStocks + " of " + target.ticker + "\n",
+                        duration.toHours(),
+                        duration.toMinutesPart(),
+                        duration.toSecondsPart(),
+                        duration.toMillisPart());
+            }
         }
     }
 
@@ -73,6 +82,7 @@ public class Broker extends Thread {
             poolExecutor.shutdown();
             System.out.println("Starting execution of program...");
         }
+        Thread.yield();
         while (!poolExecutor.isTerminated()) {
             Thread.yield();
         }

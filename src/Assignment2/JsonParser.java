@@ -60,7 +60,6 @@ public class JsonParser {
                     }
                 }
                 valid = true;
-                file = file;
                 System.out.println("Json Read");
             } catch (java.io.FileNotFoundException e) {
                 System.out.println(file + " Not Found, make sure the file is put under src/Assignment2/");

@@ -12,7 +12,7 @@
       "name": "Apple Inc",
       "ticker": "AAPL",
       "startDate": "1980-12-12",
-      "stockBrokers": 400,
+      "stockBrokers": 1,
       "description": "Apple Inc. (Apple) designs, manufactures and markets mobile communication and media devices, personal computers, and portable digital music players, and a variety of related software, services, peripherals, networking solutions, and third-party digital content and applications.",
       "exchangeCode": "NASDAQ"
     },

@@ -24,6 +24,7 @@ public class Parallel {
         for (int i = 0; i < i1; i++) {
             sum += result[i].join();
         }
+        forkJoinPool.shutdown();
         if (sum == -i1) {
             System.out.println("Spent " + Duration.between(Find.first, Instant.now()).toMillis() + "  milliseconds");
             System.out.println(target + " is at " + -1);
