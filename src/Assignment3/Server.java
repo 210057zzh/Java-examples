@@ -8,14 +8,17 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * @author 21005
+ */
 public class Server {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         ScheduleParser scheduleParser = new ScheduleParser(scan);
-        ConcurrentLinkedQueue<Assignment3.Trade> Queue = scheduleParser.ReadSchedule();
+        LinkedList<Trade> Queue = scheduleParser.ReadSchedule();
         return;
     }
 }
@@ -23,14 +26,14 @@ public class Server {
 class ScheduleParser {
     public Scanner scan;
     public String file;
-    public ConcurrentLinkedQueue<Assignment3.Trade> Queue = new ConcurrentLinkedQueue<>();
+    public LinkedList<Assignment3.Trade> Queue = new LinkedList<>();
     String first = "https://api.tiingo.com/tiingo/daily/";
 
     public ScheduleParser(Scanner scan) {
         this.scan = scan;
     }
 
-    public ConcurrentLinkedQueue<Assignment3.Trade> ReadSchedule() {
+    public LinkedList<Trade> ReadSchedule() {
         boolean valid = false;
         file = null;
         while (!valid) {
@@ -93,7 +96,8 @@ class ScheduleParser {
             //Write all the JSON data into a string using a scanner
             String inline = scanner.nextLine();
             if (inline.length() == 2) {
-                throw new NoSuchFieldError("time \"" + fields[3] + "\" is invalid, no info for ticker \"" + fields[1] + "\"");
+                throw new NoSuchFieldError("time \"" + fields[3] +
+                        "\" is invalid, no info for ticker \"" + fields[1] + "\"");
             }
             //Close the scanner
             scanner.close();
