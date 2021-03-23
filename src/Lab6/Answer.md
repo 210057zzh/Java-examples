@@ -9,8 +9,7 @@ great if this could be a web application.
 
 ### 1. High-Level Requirements
 Build a web interface that allows students to enter their schedule,
-the program then generate a time table that reflect the student's
-daily schedule.
+the program then generate a time table that reflect the student's daily schedule.
 
 ---
 
