@@ -40,6 +40,11 @@ VALUES (111, 'Swapnil Patel'),
        (103, 'Carol Liang');
 
 /* */
+ALTER TABLE lab8.grades
+    ADD FOREIGN KEY (SID)
+        REFERENCES studentinfo (SID);
+
+/* */
 SELECT *
 FROM lab8.grades;
 
