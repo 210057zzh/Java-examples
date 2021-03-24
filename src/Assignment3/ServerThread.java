@@ -107,6 +107,12 @@ public class ServerThread extends Thread {
             synchronized (allAdded) {
             }
             while (!finished) {
+                while (trades.isEmpty()) {
+                    if (finished) {
+                        return;
+                    }
+                    Thread.yield();
+                }
                 assigning.lock();
                 Duration duration = Duration.between(start, Instant.now());
                 for (Trade trade : trades) {

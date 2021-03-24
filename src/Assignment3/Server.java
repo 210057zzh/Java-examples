@@ -27,7 +27,7 @@ public class Server {
         ArrayList<Trader> traders = CSVParser.ReadTraders();
         ArrayList<ServerThread> threads = new ArrayList<>();
         try {
-            int port = 9999;
+            int port = 3456;
             System.out.println("Binding to port " + port);
             ServerSocket ss = new ServerSocket(port);
             System.out.println("Bound to port " + port);
@@ -71,40 +71,36 @@ public class Server {
             twice:
             for (int i = 0; i < traders.size(); i++) {
                 if (threads.get(i).assigning.tryLock()) {
-                    try {
-                        Trader trader = traders.get(i);
-                        while ((trade = trades.pollFirst()) != null) {
-                            Duration duration = Duration.between(ServerThread.start, Instant.now());
-                            if (duration.getSeconds() < trade.time) {
-                                threads.get(i).assigning.unlock();
-                                try {
-                                    Thread.sleep(trade.time * 1000L - duration.toMillis());
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                    Trader trader = traders.get(i);
+                    while ((trade = trades.pollFirst()) != null) {
+                        Duration duration = Duration.between(ServerThread.start, Instant.now());
+                        if (duration.getSeconds() < trade.time) {
+                            threads.get(i).assigning.unlock();
+                            try {
+                                Thread.sleep(trade.time * 1000L - duration.toMillis());
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            trades.addFirst(trade);
+                            break twice;
+                        }
+                        if (trade.numStocks > 0) {
+                            if (trader.balance - trade.numStocks * trade.price < 0) {
+                                if (!trade.tried.contains(i)) {
+                                    trade.tried.add(i);
+                                    if (trade.tried.size() == traders.size()) {
+                                        unable.addLast(trade);
+                                        break;
+                                    }
                                 }
                                 trades.addFirst(trade);
-                                threads.get(i).assigning.lock();
-                                break twice;
+                                break;
                             }
-                            if (trade.numStocks > 0) {
-                                if (trader.balance - trade.numStocks * trade.price < 0) {
-                                    if (!trade.tried.contains(i)) {
-                                        trade.tried.add(i);
-                                        if (trade.tried.size() == traders.size()) {
-                                            unable.addLast(trade);
-                                            break;
-                                        }
-                                    }
-                                    trades.addFirst(trade);
-                                    break;
-                                }
-                                trader.balance -= trade.numStocks * trade.price;
-                            }
-                            threads.get(i).trades.addLast(trade);
+                            trader.balance -= trade.numStocks * trade.price;
                         }
-                    } finally {
-                        threads.get(i).assigning.unlock();
+                        threads.get(i).trades.addLast(trade);
                     }
+                    threads.get(i).assigning.unlock();
                 }
             }
         }
