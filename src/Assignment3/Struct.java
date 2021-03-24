@@ -21,9 +21,9 @@ class Trade {
 
 class Trader {
     int id;
-    int balance;
+    double balance;
 
-    Trader(int id, int balance) {
+    Trader(int id, double balance) {
         this.id = id;
         this.balance = balance;
     }

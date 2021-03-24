@@ -23,15 +23,16 @@ public class ServerThread extends Thread {
     public static boolean finished = false;
     public static Instant start;
     private Integer traderid;
-    private Integer balance;
+    double balance;
     public LinkedList<Trade> trades = new LinkedList<>();
     private PrintWriter pw;
+    double gain = 0;
 
     public ServerThread(Socket s, Trader trader) {
         try {
             pw = new PrintWriter(s.getOutputStream());
             this.traderid = Integer.valueOf(trader.id);
-            this.balance = Integer.valueOf(trader.balance);
+            this.balance = Double.valueOf(trader.balance);
         } catch (IOException ioe) {
             System.out.println("ioe in ServerThread constructor: " + ioe.getMessage());
         }
@@ -42,29 +43,60 @@ public class ServerThread extends Thread {
         pw.flush();
     }
 
-    private void sendStockMessage(boolean assign, Trade trade, Duration duration, String startOrFinished) throws IOException {
+    private void sendStockMessage(boolean assign, Trade trade, Duration duration, String startOrFinished, int sf) throws IOException {
         String addorsell;
+        boolean in;
         if (trade.numStocks > 0) {
             addorsell = "purchase";
+            in = true;
         } else {
             addorsell = "sale";
             trade.numStocks *= -1;
+            in = false;
         }
         if (assign) {
-            sendMessage(String.format("%02d:%02d:%02d:%03d assigned " + addorsell +
+            sendMessage(String.format("[%02d:%02d:%02d:%03d] assigned " + addorsell +
                             " of " + trade.numStocks + " of " + trade.ticker,
                     duration.toHours(),
                     duration.toMinutesPart(),
                     duration.toSecondsPart(),
                     duration.toMillisPart()));
-            ;
+            if (in) {
+                sendMessage(String.format("Total cost estimate = $%.2f*%d = %.2f",
+                        trade.price, trade.numStocks, trade.price * trade.numStocks));
+            } else {
+                sendMessage(String.format("Total gain estimate = $%.2f*%d = %.2f",
+                        trade.price, trade.numStocks, trade.price * trade.numStocks));
+            }
         } else {
-            sendMessage(String.format("%02d:%02d:%02d:%03d " + startOrFinished + ' ' + addorsell +
+            sendMessage(String.format("[%02d:%02d:%02d:%03d] " + startOrFinished + ' ' + addorsell +
                             " of " + trade.numStocks + " of " + trade.ticker,
                     duration.toHours(),
                     duration.toMinutesPart(),
                     duration.toSecondsPart(),
                     duration.toMillisPart()));
+            if (in) {
+                if (sf == 1) {
+                    sendMessage(String.format("Total cost = $%.2f*%d = $%.2f",
+                            trade.price, trade.numStocks, trade.price * trade.numStocks));
+                } else if (sf == 0) {
+                    sendMessage(String.format("Remaining Balance = $%.2f-$%.2f = $%.2f",
+                            balance, trade.price * trade.numStocks, balance - trade.price * trade.numStocks));
+                    balance -= (trade.price * trade.numStocks);
+                }
+            } else {
+                if (sf == 1) {
+                    sendMessage(String.format("Total gain = $%.2f*%d = $%.2f",
+                            trade.price, trade.numStocks, trade.price * trade.numStocks));
+                } else if (sf == 0) {
+                    sendMessage(String.format("Profit earned till now = $%.2f+$%.2f = $%.2f",
+                            gain, trade.price * trade.numStocks, gain + trade.price * trade.numStocks));
+                    gain += (trade.price * trade.numStocks);
+                }
+            }
+        }
+        if (!in) {
+            trade.numStocks *= -1;
         }
     }
 
@@ -78,7 +110,7 @@ public class ServerThread extends Thread {
                 assigning.lock();
                 Duration duration = Duration.between(start, Instant.now());
                 for (Trade trade : trades) {
-                    sendStockMessage(true, trade, duration, "");
+                    sendStockMessage(true, trade, duration, "", -1);
                 }
                 Trade target;
                 while ((target = trades.pollFirst()) != null) {
@@ -92,14 +124,14 @@ public class ServerThread extends Thread {
                         }
                     }
                     duration = Duration.between(start, Instant.now());
-                    sendStockMessage(false, target, duration, "start");
+                    sendStockMessage(false, target, duration, "start", 1);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     duration = Duration.between(start, Instant.now());
-                    sendStockMessage(false, target, duration, "finished");
+                    sendStockMessage(false, target, duration, "finished", 0);
                 }
                 assigning.unlock();
             }

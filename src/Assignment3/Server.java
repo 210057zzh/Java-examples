@@ -27,42 +27,39 @@ public class Server {
         ArrayList<Trader> traders = CSVParser.ReadTraders();
         ArrayList<ServerThread> threads = new ArrayList<>();
         try {
-            System.out.println("Binding to port " + 9999);
-            ServerSocket ss = new ServerSocket(9999);
-            System.out.println("Bound to port " + 9999);
+            int port = 9999;
+            System.out.println("Binding to port " + port);
+            ServerSocket ss = new ServerSocket(port);
+            System.out.println("Bound to port " + port);
+            System.out.println("Listening on port " + port);
+            System.out.println("Waiting for traders");
             int traderidx = 0;
             while (threads.size() != traders.size()) {
                 Socket s = ss.accept();
-                System.out.println("Connection from: " + s.getInetAddress());
+                System.out.println("Connection from: " + s.getInetAddress().getHostAddress());
                 threads.add(new ServerThread(s, traders.get(traderidx)));
+                if ((traders.size() - threads.size()) != 0) {
+                    System.out.println("Waiting for " + (traders.size() - threads.size())
+                            + " more traders");
+                    for (ServerThread thread : threads) {
+                        thread.sendMessage((traders.size() - threads.size())
+                                + " more trader is needed before the service can begin. Waiting...");
+                    }
+                } else {
+                    System.out.println("Starting service.");
+                    for (ServerThread thread : threads) {
+                        thread.sendMessage("All traders have arrived! Starting service.");
+                    }
+                }
                 traderidx++;
             }
         } catch (IOException ioe) {
             System.out.println("ioe in Server constructor: " + ioe.getMessage());
             return;
         }
-        ExecutorService poolExecutor = Executors.newCachedThreadPool();
+        ExecutorService poolExecutor = Executors.newFixedThreadPool(traders.size());
         synchronized (ServerThread.allAdded) {
             for (int i = 0; i < traders.size(); i++) {
-                /*Trader trader = traders.get(i);
-                Trade trade;
-                while ((trade = trades.pollFirst()) != null) {
-                    if (trade.numStocks > 0) {
-                        if (trader.balance - trade.numStocks * trade.price < 0) {
-                            if (!trade.tried.contains(i)) {
-                                trade.tried.add(i);
-                                if (trade.tried.size() == traders.size()) {
-                                    unable.addLast(trade);
-                                    break;
-                                }
-                            }
-                            trades.addFirst(trade);
-                            break;
-                        }
-                        trader.balance -= trade.numStocks * trade.price;
-                    }
-                    threads.get(i).trades.addLast(trade);
-                }*/
                 poolExecutor.execute(threads.get(i));
             }
             poolExecutor.shutdown();
@@ -71,13 +68,13 @@ public class Server {
 
         Trade trade;
         while (!trades.isEmpty()) {
+            twice:
             for (int i = 0; i < traders.size(); i++) {
                 if (threads.get(i).assigning.tryLock()) {
                     try {
                         Trader trader = traders.get(i);
                         while ((trade = trades.pollFirst()) != null) {
-                            Instant now = Instant.now();
-                            Duration duration = Duration.between(ServerThread.start, now);
+                            Duration duration = Duration.between(ServerThread.start, Instant.now());
                             if (duration.getSeconds() < trade.time) {
                                 threads.get(i).assigning.unlock();
                                 try {
@@ -87,7 +84,7 @@ public class Server {
                                 }
                                 trades.addFirst(trade);
                                 threads.get(i).assigning.lock();
-                                continue;
+                                break twice;
                             }
                             if (trade.numStocks > 0) {
                                 if (trader.balance - trade.numStocks * trade.price < 0) {
@@ -124,9 +121,28 @@ public class Server {
         for (Trade bad : unable) {
             System.out.printf("(%d,%s,%.2f,%d)\n", bad.time, bad.ticker, bad.price, bad.numStocks);
         }
-        for (Trader trader : traders) {
-            System.out.println(trader.balance);
+        Duration duration = Duration.between(ServerThread.start, Instant.now());
+        for (ServerThread thread : threads) {
+            try {
+                thread.sendMessage("uncompleted trade:" + unable.size());
+                for (Trade bad : unable) {
+                    thread.sendMessage(String.format("(%d,%s,%.2f,%d,%s)", bad.time, bad.ticker, bad.price, bad.numStocks, bad.date));
+                }
+                thread.sendMessage(String.format("[%02d:%02d:%02d:%03d] Processing complete!!",
+                        duration.toHours(),
+                        duration.toMinutesPart(),
+                        duration.toSecondsPart(),
+                        duration.toMillisPart()));
+                thread.sendMessage(String.format("Total Profit Earned: %.2f", thread.gain));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        System.out.printf("[%02d:%02d:%02d:%03d] Processing complete!!",
+                duration.toHours(),
+                duration.toMinutesPart(),
+                duration.toSecondsPart(),
+                duration.toMillisPart());
     }
 }
 
@@ -224,7 +240,7 @@ class CSVParser {
             throw new InputMismatchException();
         }
         for (String number : date) {
-            Integer num = Integer.parseInt(number);
+            Integer.parseInt(number);
         }
         String tiingo = first + fields[1] + "/prices?startDate=" + fields[3] + "&endDate=" + fields[3] +
                 "&token=ae3d790e817e50d08b86f7d4b467cc8d67554ec3";
@@ -261,9 +277,9 @@ class CSVParser {
         if (fields.length != 2) {
             throw new NoSuchFieldError("one of the trader has bad format");
         }
-        if (Integer.parseInt(fields[0]) < 0 && Integer.parseInt(fields[1]) <= 0) {
+        if (Integer.parseInt(fields[0]) < 0 && Double.parseDouble(fields[1]) <= 0) {
             throw new NumberFormatException();
         }
-        return new Trader(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]));
+        return new Trader(Integer.parseInt(fields[0]), Double.parseDouble(fields[1]));
     }
 }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
@@ -15,10 +16,15 @@ import java.util.Scanner;
 public class Client {
 
     private BufferedReader br;
-    private PrintWriter pw;
+    private Scanner scanner = new Scanner(System.in);
 
-    public Client(String hostname, int port) {
+    public Client() {
         try {
+            System.out.println("Welcome to SalStocks v2.0!");
+            System.out.print("Enter the server hostname: ");
+            String hostname = scanner.nextLine().strip();
+            System.out.print("Enter the server port: ");
+            Integer port = scanner.nextInt();
             System.out.println("Trying to connect to " + hostname + ":" + port);
             Socket s = new Socket(hostname, port);
             System.out.println("Connected to " + hostname + ":" + port);
@@ -29,10 +35,12 @@ public class Client {
             }
         } catch (IOException ioe) {
             System.out.println("Server Stopped");
+        } catch (InputMismatchException e) {
+            System.out.println("Entry Incorrect");
         }
     }
 
     public static void main(String[] args) {
-        Client c = new Client("localhost", 9999);
+        Client c = new Client();
     }
 }
