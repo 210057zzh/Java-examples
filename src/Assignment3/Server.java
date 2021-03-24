@@ -27,7 +27,7 @@ public class Server {
         ArrayList<Trader> traders = CSVParser.ReadTraders();
         ArrayList<ServerThread> threads = new ArrayList<>();
         try {
-            int port = 3456;
+            int port = 9999;
             System.out.println("Binding to port " + port);
             ServerSocket ss = new ServerSocket(port);
             System.out.println("Bound to port " + port);
