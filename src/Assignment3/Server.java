@@ -1,6 +1,7 @@
 package Assignment3;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,7 +12,10 @@ import java.net.Socket;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +31,7 @@ public class Server {
         ArrayList<Trader> traders = CSVParser.ReadTraders();
         ArrayList<ServerThread> threads = new ArrayList<>();
         try {
-            int port = 9999;
+            int port = 3456;
             System.out.println("Binding to port " + port);
             ServerSocket ss = new ServerSocket(port);
             System.out.println("Bound to port " + port);
@@ -115,7 +119,7 @@ public class Server {
         }
         System.out.println("uncompleted trade:" + unable.size());
         for (Trade bad : unable) {
-            System.out.printf("(%d,%s,%.2f,%d)\n", bad.time, bad.ticker, bad.price, bad.numStocks);
+            System.out.printf("(%d,%s,%.2f,%d,%s)\n", bad.time, bad.ticker, bad.price, bad.numStocks, bad.date);
         }
         Duration duration = Duration.between(ServerThread.start, Instant.now());
         for (ServerThread thread : threads) {
@@ -139,6 +143,15 @@ public class Server {
                 duration.toMinutesPart(),
                 duration.toSecondsPart(),
                 duration.toMillisPart());
+        for (ServerThread thread : threads) {
+            if (thread.socket != null) {
+                try {
+                    thread.socket.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
     }
 }
 
@@ -146,8 +159,8 @@ class CSVParser {
     public Scanner scan;
     public String file;
     public LinkedList<Trade> trades = new LinkedList<>();
-    String first = "https://api.tiingo.com/tiingo/daily/";
     public ArrayList<Trader> traders = new ArrayList<>();
+    String first = "https://api.tiingo.com/tiingo/daily/";
 
     public CSVParser(Scanner scan) {
         this.scan = scan;

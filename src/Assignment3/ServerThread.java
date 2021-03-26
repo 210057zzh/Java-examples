@@ -1,11 +1,6 @@
 package Assignment3;
 
-import Assignment2.Broker;
-import Test.ChatRoom;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.Duration;
@@ -18,18 +13,20 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author 21005
  */
 public class ServerThread extends Thread {
-    public Lock assigning = new ReentrantLock();
     public static final Object allAdded = new Object();
     public static boolean finished = false;
     public static Instant start;
-    private Integer traderid;
-    double balance;
+    public Lock assigning = new ReentrantLock();
     public LinkedList<Trade> trades = new LinkedList<>();
-    private PrintWriter pw;
+    double balance;
     double gain = 0;
+    private Integer traderid;
+    private PrintWriter pw;
+    public Socket socket;
 
     public ServerThread(Socket s, Trader trader) {
         try {
+            socket = s;
             pw = new PrintWriter(s.getOutputStream());
             this.traderid = Integer.valueOf(trader.id);
             this.balance = Double.valueOf(trader.balance);
