@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,6 +18,7 @@ public class ServerThread extends Thread {
     public static boolean finished = false;
     public static Instant start;
     public Lock assigning = new ReentrantLock();
+    public Condition assigned = assigning.newCondition();
     public LinkedList<Trade> trades = new LinkedList<>();
     double balance;
     double gain = 0;
@@ -103,14 +105,18 @@ public class ServerThread extends Thread {
             sendMessage("this is trader " + traderid);
             synchronized (allAdded) {
             }
-            while (!finished) {
-                while (trades.isEmpty()) {
-                    if (finished) {
-                        return;
-                    }
-                    Thread.yield();
-                }
+            while (true) {
                 assigning.lock();
+                if (trades.isEmpty()) {
+                    try {
+                        assigned.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (finished) {
+                    return;
+                }
                 Duration duration = Duration.between(start, Instant.now());
                 for (Trade trade : trades) {
                     sendStockMessage(true, trade, duration, "", -1);

@@ -79,6 +79,7 @@ public class Server {
                     while ((trade = trades.pollFirst()) != null) {
                         Duration duration = Duration.between(ServerThread.start, Instant.now());
                         if (duration.getSeconds() < trade.time) {
+                            threads.get(i).assigned.signal();
                             threads.get(i).assigning.unlock();
                             try {
                                 Thread.sleep(trade.time * 1000L - duration.toMillis());
@@ -104,6 +105,7 @@ public class Server {
                         }
                         threads.get(i).trades.addLast(trade);
                     }
+                    threads.get(i).assigned.signal();
                     threads.get(i).assigning.unlock();
                 }
             }
