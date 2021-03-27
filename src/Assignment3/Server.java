@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,8 +63,9 @@ public class Server {
             System.out.println("ioe in Server constructor: " + ioe.getMessage());
             return;
         }
-        ExecutorService poolExecutor = Executors.newFixedThreadPool(traders.size());
+        ExecutorService poolExecutor = Executors.newCachedThreadPool();
         synchronized (ServerThread.allAdded) {
+            ServerThread.countDownLatch = new CountDownLatch(trades.size());
             for (int i = 0; i < traders.size(); i++) {
                 poolExecutor.execute(threads.get(i));
             }
@@ -96,6 +98,7 @@ public class Server {
                                     trade.tried.add(i);
                                     if (trade.tried.size() == traders.size()) {
                                         unable.addLast(trade);
+                                        ServerThread.countDownLatch.countDown();
                                         break;
                                     }
                                 }
@@ -112,11 +115,10 @@ public class Server {
             }
         }
         try {
-            Thread.sleep(300);
+            ServerThread.countDownLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        ServerThread.finished = true;
         for (ServerThread thread : threads) {
             thread.assigning.lock();
             thread.assigned.signal();
@@ -178,7 +180,7 @@ class CSVParser {
         file = null;
         while (!valid) {
             try {
-                System.out.print("What is the name of the schedule file? ");
+                System.out.print("!What is the name of the schedule file? ");
                 file = scan.nextLine();
                 BufferedReader csv = new BufferedReader(new FileReader("TestFile/Assignment3/" + file));
                 String strLine;
