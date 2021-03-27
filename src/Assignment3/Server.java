@@ -116,6 +116,11 @@ public class Server {
             e.printStackTrace();
         }
         ServerThread.finished = true;
+        for (ServerThread thread : threads) {
+            thread.assigning.lock();
+            thread.assigned.signal();
+            thread.assigning.unlock();
+        }
         while (!poolExecutor.isTerminated()) {
             Thread.yield();
         }
