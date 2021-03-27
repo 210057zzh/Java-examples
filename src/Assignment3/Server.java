@@ -180,7 +180,7 @@ class CSVParser {
         file = null;
         while (!valid) {
             try {
-                System.out.print("!What is the name of the schedule file? ");
+                System.out.print("What is the name of the schedule file? ");
                 file = scan.nextLine();
                 BufferedReader csv = new BufferedReader(new FileReader("TestFile/Assignment3/" + file));
                 String strLine;
