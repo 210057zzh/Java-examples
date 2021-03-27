@@ -57,6 +57,7 @@ public class Server {
                 }
                 traderidx++;
             }
+            ss.close();
         } catch (IOException ioe) {
             System.out.println("ioe in Server constructor: " + ioe.getMessage());
             return;
@@ -158,7 +159,6 @@ public class Server {
                 }
             }
         }
-
     }
 }
 
