@@ -6,10 +6,11 @@ import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.CountDownLatch;
+
 
 /**
  * @author 21005
@@ -21,12 +22,13 @@ public class ServerThread extends Thread {
     public Lock assigning = new ReentrantLock();
     public Condition assigned = assigning.newCondition();
     public LinkedList<Trade> trades = new LinkedList<>();
-    public static CountDownLatch countDownLatch;
     double balance;
     double gain = 0;
     private Integer traderid;
     private PrintWriter pw;
     public Socket socket;
+    static CountDownLatch count;
+    boolean waiting = false;
 
     public ServerThread(Socket s, Trader trader) {
         try {
@@ -107,14 +109,22 @@ public class ServerThread extends Thread {
             sendMessage("this is trader " + traderid);
             synchronized (allAdded) {
             }
-            while (countDownLatch.getCount() > 0) {
+            while (true) {
                 assigning.lock();
                 if (trades.isEmpty()) {
                     try {
+                        waiting = true;
                         assigned.await();
+                        waiting = false;
+                        if (finished) {
+                            return;
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                }
+                if (finished) {
+                    return;
                 }
                 Duration duration = Duration.between(start, Instant.now());
                 for (Trade trade : trades) {
@@ -140,7 +150,7 @@ public class ServerThread extends Thread {
                     }
                     duration = Duration.between(start, Instant.now());
                     sendStockMessage(false, target, duration, "finished", 0);
-                    countDownLatch.countDown();
+                    count.countDown();
                 }
                 assigning.unlock();
             }

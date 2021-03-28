@@ -63,26 +63,29 @@ public class Server {
             System.out.println("ioe in Server constructor: " + ioe.getMessage());
             return;
         }
-        ExecutorService poolExecutor = Executors.newCachedThreadPool();
+        ExecutorService poolExecutor = Executors.newFixedThreadPool(traders.size());
         synchronized (ServerThread.allAdded) {
-            ServerThread.countDownLatch = new CountDownLatch(trades.size());
             for (int i = 0; i < traders.size(); i++) {
                 poolExecutor.execute(threads.get(i));
             }
             poolExecutor.shutdown();
             ServerThread.start = Instant.now();
+            ServerThread.count = new CountDownLatch(trades.size());
         }
 
         Trade trade;
         while (!trades.isEmpty()) {
             twice:
             for (int i = 0; i < traders.size(); i++) {
-                if (threads.get(i).assigning.tryLock()) {
+                if (threads.get(i).trades.isEmpty()) {
+                    threads.get(i).assigning.lock();
                     Trader trader = traders.get(i);
                     while ((trade = trades.pollFirst()) != null) {
                         Duration duration = Duration.between(ServerThread.start, Instant.now());
                         if (duration.getSeconds() < trade.time) {
-                            threads.get(i).assigned.signal();
+                            if (!threads.get(i).trades.isEmpty()) {
+                                threads.get(i).assigned.signal();
+                            }
                             threads.get(i).assigning.unlock();
                             try {
                                 Thread.sleep(trade.time * 1000L - duration.toMillis());
@@ -98,7 +101,7 @@ public class Server {
                                     trade.tried.add(i);
                                     if (trade.tried.size() == traders.size()) {
                                         unable.addLast(trade);
-                                        ServerThread.countDownLatch.countDown();
+                                        ServerThread.count.countDown();
                                         break;
                                     }
                                 }
@@ -109,17 +112,23 @@ public class Server {
                         }
                         threads.get(i).trades.addLast(trade);
                     }
-                    threads.get(i).assigned.signal();
+                    if (!threads.get(i).trades.isEmpty()) {
+                        threads.get(i).assigned.signal();
+                    }
                     threads.get(i).assigning.unlock();
                 }
             }
         }
         try {
-            ServerThread.countDownLatch.await();
+            ServerThread.count.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        ServerThread.finished = true;
         for (ServerThread thread : threads) {
+            while (!thread.waiting) {
+                Thread.yield();
+            }
             thread.assigning.lock();
             thread.assigned.signal();
             thread.assigning.unlock();
@@ -148,7 +157,7 @@ public class Server {
                 e.printStackTrace();
             }
         }
-        System.out.printf("[%02d:%02d:%02d:%03d] Processing complete!!",
+        System.out.printf("[%02d:%02d:%02d:%03d] Processing complete!!\n",
                 duration.toHours(),
                 duration.toMinutesPart(),
                 duration.toSecondsPart(),
