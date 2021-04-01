@@ -77,8 +77,7 @@ public class Server {
         while (!trades.isEmpty()) {
             twice:
             for (int i = 0; i < traders.size(); i++) {
-                if (threads.get(i).trades.isEmpty()) {
-                    threads.get(i).assigning.lock();
+                if (threads.get(i).assigning.tryLock()) {
                     Trader trader = traders.get(i);
                     while ((trade = trades.pollFirst()) != null) {
                         Duration duration = Duration.between(ServerThread.start, Instant.now());

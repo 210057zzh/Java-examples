@@ -5,4 +5,7 @@
 	<lib name="gson-2.8.6.jar" scope="COMPILE">
 		<relative-module-cls project-related="jar://$PROJECT_DIR$/lib/gson-2.8.6.jar!/"/>
 	</lib>
+	<levels>
+		<level name="mysql-connector-java-8.0.23" value="project"/>
+	</levels>
 </component>
