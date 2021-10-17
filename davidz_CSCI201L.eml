@@ -7,5 +7,8 @@
 	</lib>
 	<levels>
 		<level name="mysql-connector-java-8.0.23" value="project"/>
+		<level name="Java EE 6-Java EE 6" value="project"/>
+		<level name="WebSocket-1.1" value="project"/>
+		<level name="gson-2.8.6" value="project"/>
 	</levels>
 </component>

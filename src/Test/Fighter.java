@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 class Foo<T> {
 
-    public static<T> void fightFoo(T[] list) {
+    public static <T> void fightFoo(T[] list) {
 
         System.out.println("I fought " + list.length + " foos!");
 
@@ -13,12 +13,12 @@ class Foo<T> {
 
 }
 
-public class Fighter{
+public class Fighter {
 
     public static void main(String[] args) {
 
-        Double[] doubles = {1.0, 1.1, 1.2, 1.3, 1.4, 1.5}; // Call fightFoo here
-
+        String a = "600", b = "9";
+        System.out.println(a.compareTo(b));
     }
 
 }

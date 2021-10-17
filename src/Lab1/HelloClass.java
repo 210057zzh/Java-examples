@@ -1,30 +1,34 @@
 package Lab1;
 
-class C0 {
-    public void meth3() {
-        System.out.println("3");
-    }
-}
-
-class C1 extends C0 {
-    public void meth3() {
-        System.out.println("4");
-    }
-}
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
+import java.util.Scanner;
 
 public class HelloClass {
-    public static void meth(C0 c) {
-        c.meth3();
-    }
-
-    public static void main(String[] args) {
-        C0 c0 = new C1();
-        c0.meth3();
-
-        meth(c0);
-
-        C1 c1 = new C1();
-        c1.meth3();
-        meth(c1);
+    public static void main(String[] args) throws IOException {
+//        File dir = new File("tmp/test");
+//        dir.mkdirs();
+//        File tmp = new File(dir, "tmp.txt");
+//        try {
+//            tmp.createNewFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        OutputStream f = new FileOutputStream(tmp);
+//        f.write("apple".getBytes(StandardCharsets.UTF_8));
+        Random random = new Random();
+        while (true) {
+            Scanner scanner = new Scanner(System.in);
+            scanner.nextLine();
+            System.out.print("What would you like to do?\n" +
+                    "1. Compress\n" +
+                    "2. Decompress\n" +
+                    "3. Exit\n" +
+                    "Your choice:");
+        }
     }
 }

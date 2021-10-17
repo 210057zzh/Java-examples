@@ -2,17 +2,16 @@
   <artifact type="exploded-war" name="Lab11">
     <output-path>$PROJECT_DIR$/out/artifacts/Lab11</output-path>
     <root id="root">
-      <element id="directory" name="Web">
-        <element id="dir-copy" path="$PROJECT_DIR$/WebContent" />
-      </element>
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
-          <element id="javaee-facet-classes" facet="davidz_CSCI201L/web/Web" />
           <element id="module-output" name="davidz_CSCI201L" />
         </element>
         <element id="directory" name="lib">
-          <element id="library" level="project" name="mysql-connector-java-8.0.23" />
           <element id="library" level="module" name="gson-2.8.6.jar" module-name="davidz_CSCI201L" />
+          <element id="library" level="project" name="mysql-connector-java-8.0.23" />
+          <element id="library" level="project" name="Java EE 6-Java EE 6" />
+          <element id="library" level="project" name="WebSocket-1.1" />
+          <element id="library" level="project" name="gson-2.8.6" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="davidz_CSCI201L/web/Web" />
