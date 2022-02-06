@@ -75,7 +75,3 @@ FROM lab8.StudentInfo s,
 WHERE s.SID = g.SID
   AND s.Name = 'Andrew Garcia'
 ORDER BY g.ClassName;
-
-SELECT s.name, g.Grade
-FROM Lab8.StudentInfo s,
-     Lab8.Grades g

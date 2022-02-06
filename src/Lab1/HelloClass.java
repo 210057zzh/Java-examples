@@ -10,25 +10,16 @@ import java.util.Scanner;
 
 public class HelloClass {
     public static void main(String[] args) throws IOException {
-//        File dir = new File("tmp/test");
-//        dir.mkdirs();
-//        File tmp = new File(dir, "tmp.txt");
-//        try {
-//            tmp.createNewFile();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        OutputStream f = new FileOutputStream(tmp);
-//        f.write("apple".getBytes(StandardCharsets.UTF_8));
-        Random random = new Random();
-        while (true) {
-            Scanner scanner = new Scanner(System.in);
-            scanner.nextLine();
-            System.out.print("What would you like to do?\n" +
-                    "1. Compress\n" +
-                    "2. Decompress\n" +
-                    "3. Exit\n" +
-                    "Your choice:");
+        Scanner scanner = new Scanner(System.in);
+        Integer i = 0;
+        while (i != 5) {
+            i = scanner.nextInt();
+        }
+        scanner.close();
+        Scanner scanner1 = new Scanner(System.in);
+        i = 0;
+        while (i != 5) {
+            i = scanner1.nextInt();
         }
     }
 }
